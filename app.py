@@ -286,15 +286,21 @@ def report_download():
     logs = db.get_mood_logs(user["id"], limit=365)
     cbt_entries = db.get_cbt_entries(user["id"], limit=20)
 
-    chart_data = {
-        "trend": charts.mood_trend_chart(logs),
-        "sleep": charts.sleep_correlation_chart(logs),
-        "exercise": charts.exercise_correlation_chart(logs),
-    }
-    stats = charts.correlation_stats(logs)
+    try:
+        chart_data = {
+            "trend": charts.mood_trend_chart(logs),
+            "sleep": charts.sleep_correlation_chart(logs),
+            "exercise": charts.exercise_correlation_chart(logs),
+        }
+        stats = charts.correlation_stats(logs)
 
-    out_path = os.path.join(OUT_DIR, f"auro_therapist_report_{user['id']}.pdf")
-    pdf_gen.generate_therapist_report_pdf(user, logs, cbt_entries, chart_data, stats, out_path)
+        out_path = os.path.join(OUT_DIR, f"auro_therapist_report_{user['id']}.pdf")
+        pdf_gen.generate_therapist_report_pdf(user, logs, cbt_entries, chart_data, stats, out_path)
+    except Exception:
+        app.logger.exception("Failed to generate therapist report for user %s", user["id"])
+        flash("Couldn't generate the report — please try again in a moment.")
+        return redirect(url_for("dashboard"))
+
     return send_file(out_path, as_attachment=True, download_name=f"Auro_Therapist_Report_{user['name'].replace(' ', '_')}.pdf")
 
 

@@ -6,6 +6,7 @@ background, glowing blue / green / red accents, modern sans type.
 import io
 import base64
 from datetime import datetime
+from xml.sax.saxutils import escape as _xml_escape
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.lib import colors
@@ -24,6 +25,16 @@ GREEN = colors.HexColor("#35e08a")
 RED = colors.HexColor("#ff4d6a")
 TEXT = colors.HexColor("#e8f0f7")
 TEXT_DIM = colors.HexColor("#93a4b8")
+
+
+def _safe(value):
+    """Escape user-entered text so a stray '&', '<', or '>' can't break
+    ReportLab's Paragraph XML parser and crash the whole report build.
+    Always route free-text fields (names, notes, CBT entries, etc.) through
+    this before putting them in a Paragraph."""
+    if value is None:
+        return ""
+    return _xml_escape(str(value))
 
 
 def _neon_page(canvas, doc):
@@ -104,7 +115,7 @@ def generate_welcome_pdf(user_name, phone, age, sex, email, location, out_path):
     story.append(Paragraph("A Mental Health Tracker for the quiet parts of your day", styles["AuroSub"]))
     story.append(HRFlowable(width="60%", thickness=1, color=BLUE, spaceAfter=16, hAlign="CENTER"))
 
-    story.append(Paragraph(f"Dear {user_name},", styles["AuroBody"]))
+    story.append(Paragraph(f"Dear {_safe(user_name)},", styles["AuroBody"]))
     story.append(Paragraph(
         "Welcome to Auro. Think of this as the little glowing lamp by the door — "
         "a private, unhurried space where your moods, your sleep, and your days can be "
@@ -114,12 +125,12 @@ def generate_welcome_pdf(user_name, phone, age, sex, email, location, out_path):
 
     story.append(Paragraph("Your account", styles["AuroHeading"]))
     data = [
-        ["Name", user_name],
-        ["Phone", phone],
+        ["Name", _safe(user_name)],
+        ["Phone", _safe(phone)],
         ["Age", str(age) if age else "—"],
-        ["Sex", sex or "—"],
-        ["Email", email or "—"],
-        ["Location", location or "—"],
+        ["Sex", _safe(sex) or "—"],
+        ["Email", _safe(email) or "—"],
+        ["Location", _safe(location) or "—"],
         ["Registered on", datetime.now().strftime("%d %B %Y")],
     ]
     tbl = Table(data, colWidths=[4.2 * cm, 9.5 * cm])
@@ -175,9 +186,9 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
     story.append(HRFlowable(width="60%", thickness=1, color=BLUE, spaceAfter=14, hAlign="CENTER"))
 
     info = [
-        ["Client", user["name"]],
-        ["Age / Sex", f"{user['age'] or '—'} / {user['sex'] or '—'}"],
-        ["Location", user["location"] or "—"],
+        ["Client", _safe(user["name"])],
+        ["Age / Sex", f"{user['age'] or '—'} / {_safe(user['sex']) or '—'}"],
+        ["Location", _safe(user["location"]) or "—"],
         ["Report generated", datetime.now().strftime("%d %B %Y, %H:%M")],
         ["Entries covered", f"{len(logs)} daily log(s)"],
     ]
@@ -241,13 +252,13 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
     if cbt_entries:
         story.append(Paragraph("Recent CBT thought-records", styles["AuroHeading"]))
         for e in cbt_entries[:8]:
-            story.append(Paragraph(f"<b>{e['entry_date']}</b> — {e['exercise_type'].replace('_',' ').title()}", styles["AuroBody"]))
+            story.append(Paragraph(f"<b>{_safe(e['entry_date'])}</b> — {_safe(e['exercise_type'].replace('_',' ').title())}", styles["AuroBody"]))
             if e["situation"]:
-                story.append(Paragraph(f"Situation: {e['situation']}", styles["AuroBody"]))
+                story.append(Paragraph(f"Situation: {_safe(e['situation'])}", styles["AuroBody"]))
             if e["automatic_thought"]:
-                story.append(Paragraph(f"Automatic thought: {e['automatic_thought']}", styles["AuroBody"]))
+                story.append(Paragraph(f"Automatic thought: {_safe(e['automatic_thought'])}", styles["AuroBody"]))
             if e["balanced_thought"]:
-                story.append(Paragraph(f"Balanced thought: {e['balanced_thought']}", styles["AuroBody"]))
+                story.append(Paragraph(f"Balanced thought: {_safe(e['balanced_thought'])}", styles["AuroBody"]))
             if e["mood_before"] is not None and e["mood_after"] is not None:
                 story.append(Paragraph(f"Mood shift: {e['mood_before']} &rarr; {e['mood_after']}", styles["AuroBody"]))
             story.append(HRFlowable(width="100%", thickness=0.4, color=BORDER, spaceAfter=8, spaceBefore=4))
