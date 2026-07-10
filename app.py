@@ -29,7 +29,16 @@ def login_required(view):
 
     @wraps(view)
     def wrapped(*args, **kwargs):
-        if not session.get("user_id"):
+        user_id = session.get("user_id")
+        if not user_id:
+            return redirect(url_for("login"))
+        # Guard against a stale session pointing at a user that no longer
+        # exists (e.g. the SQLite file was reset by a redeploy/restart on
+        # a host without a persistent disk). Without this check, accessing
+        # any page here would 500 instead of asking the person to log in again.
+        if db.get_user_by_id(user_id) is None:
+            session.clear()
+            flash("Your session expired — please log in again.")
             return redirect(url_for("login"))
         return view(*args, **kwargs)
     return wrapped

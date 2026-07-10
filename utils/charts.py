@@ -11,29 +11,32 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
 
-# Rajbari-inspired palette: deep maroon, antique gold, teal, ivory
-MAROON = "#5A1A24"
-GOLD = "#C9A24B"
-TEAL = "#1F4B4A"
-IVORY = "#F3E9D2"
-INK = "#2B1810"
+# Neon Night palette: dark panel background baked into every chart so it
+# reads consistently whether it's sitting on the dark dashboard or embedded
+# in a (light) PDF page.
+PANEL = "#10151d"
+BLUE = "#3aa0ff"
+GREEN = "#35e08a"
+RED = "#ff4d6a"
+TEXT = "#e8f0f7"
+GRID = "#2a3542"
 
 plt.rcParams.update({
-    "font.family": "serif",
-    "axes.edgecolor": GOLD,
-    "axes.labelcolor": INK,
-    "text.color": INK,
-    "xtick.color": INK,
-    "ytick.color": INK,
-    "figure.facecolor": "none",
-    "axes.facecolor": "none",
-    "savefig.facecolor": "none",
+    "font.family": "sans-serif",
+    "axes.edgecolor": GRID,
+    "axes.labelcolor": TEXT,
+    "text.color": TEXT,
+    "xtick.color": TEXT,
+    "ytick.color": TEXT,
+    "figure.facecolor": PANEL,
+    "axes.facecolor": PANEL,
+    "savefig.facecolor": PANEL,
 })
 
 
 def _fig_to_base64(fig):
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=160, bbox_inches="tight", transparent=True)
+    fig.savefig(buf, format="png", dpi=160, bbox_inches="tight", facecolor=PANEL)
     plt.close(fig)
     buf.seek(0)
     return base64.b64encode(buf.read()).decode("utf-8")
@@ -48,21 +51,21 @@ def mood_trend_chart(logs):
     anx = [r["anxiety_score"] if r["anxiety_score"] is not None else None for r in logs]
 
     fig, ax = plt.subplots(figsize=(8, 3.6))
-    ax.plot(dates, moods, color=MAROON, linewidth=2.4, marker="o", markersize=4,
-            markerfacecolor=GOLD, markeredgecolor=MAROON, label="Mood")
+    ax.plot(dates, moods, color=BLUE, linewidth=2.4, marker="o", markersize=4,
+            markerfacecolor=GREEN, markeredgecolor=BLUE, label="Mood")
     if any(a is not None for a in anx):
-        ax.plot(dates, anx, color=TEAL, linewidth=2, linestyle="--", marker="s",
+        ax.plot(dates, anx, color=RED, linewidth=2, linestyle="--", marker="s",
                 markersize=3.5, label="Anxiety")
 
     ax.set_ylim(0, 10.5)
     ax.set_ylabel("Score (1-10)")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
     fig.autofmt_xdate(rotation=30)
-    ax.legend(frameon=False, loc="upper left")
+    ax.legend(frameon=False, loc="upper left", labelcolor=TEXT)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    ax.grid(axis="y", color=GOLD, alpha=0.25, linewidth=0.6)
-    ax.set_title("Mood & Anxiety Over Time", fontsize=13, color=MAROON, weight="bold")
+    ax.grid(axis="y", color=GRID, alpha=0.6, linewidth=0.6)
+    ax.set_title("Mood & Anxiety Over Time", fontsize=13, color=BLUE, weight="bold")
     return _fig_to_base64(fig)
 
 
@@ -74,7 +77,7 @@ def sleep_correlation_chart(logs):
     xs, ys = zip(*pts)
 
     fig, ax = plt.subplots(figsize=(5.2, 4))
-    ax.scatter(xs, ys, s=70, color=TEAL, alpha=0.75, edgecolor=IVORY, linewidth=0.8)
+    ax.scatter(xs, ys, s=70, color=BLUE, alpha=0.85, edgecolor=TEXT, linewidth=0.6)
 
     # simple trend line
     try:
@@ -82,7 +85,7 @@ def sleep_correlation_chart(logs):
         z = np.polyfit(xs, ys, 1)
         p = np.poly1d(z)
         xline = sorted(xs)
-        ax.plot(xline, p(xline), color=MAROON, linewidth=2, linestyle="--")
+        ax.plot(xline, p(xline), color=GREEN, linewidth=2, linestyle="--")
     except Exception:
         pass
 
@@ -91,8 +94,8 @@ def sleep_correlation_chart(logs):
     ax.set_ylim(0, 10.5)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    ax.grid(color=GOLD, alpha=0.25, linewidth=0.6)
-    ax.set_title("Sleep vs. Mood", fontsize=12, color=MAROON, weight="bold")
+    ax.grid(color=GRID, alpha=0.6, linewidth=0.6)
+    ax.set_title("Sleep vs. Mood", fontsize=12, color=BLUE, weight="bold")
     return _fig_to_base64(fig)
 
 
@@ -104,14 +107,14 @@ def exercise_correlation_chart(logs):
     xs, ys = zip(*pts)
 
     fig, ax = plt.subplots(figsize=(5.2, 4))
-    ax.scatter(xs, ys, s=70, color=GOLD, alpha=0.85, edgecolor=MAROON, linewidth=0.8)
+    ax.scatter(xs, ys, s=70, color=GREEN, alpha=0.9, edgecolor=TEXT, linewidth=0.6)
 
     try:
         import numpy as np
         z = np.polyfit(xs, ys, 1)
         p = np.poly1d(z)
         xline = sorted(xs)
-        ax.plot(xline, p(xline), color=TEAL, linewidth=2, linestyle="--")
+        ax.plot(xline, p(xline), color=RED, linewidth=2, linestyle="--")
     except Exception:
         pass
 
@@ -120,8 +123,8 @@ def exercise_correlation_chart(logs):
     ax.set_ylim(0, 10.5)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    ax.grid(color=GOLD, alpha=0.25, linewidth=0.6)
-    ax.set_title("Exercise vs. Mood", fontsize=12, color=MAROON, weight="bold")
+    ax.grid(color=GRID, alpha=0.6, linewidth=0.6)
+    ax.set_title("Exercise vs. Mood", fontsize=12, color=GREEN, weight="bold")
     return _fig_to_base64(fig)
 
 

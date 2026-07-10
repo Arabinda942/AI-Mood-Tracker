@@ -1,0 +1,104 @@
+Project Name
+
+AI Mood Tracker
+
+GitHub Repository
+
+https://github.com/Arabinda942/AI-Mood-Tracker
+
+Step 1: Open the project folder in VS Code
+
+Example:
+
+AI Mood Tracker/
+│── app.py
+│── database.py
+│── requirements.txt
+│── README.md
+│── templates/
+│── static/
+│── utils/
+
+Open the terminal inside VS Code.
+
+Step 2: Initialize Git
+git init
+
+Output:
+
+Initialized empty Git repository in C:/Users/YourName/Desktop/AI Mood Tracker/.git/
+Step 3: Check the status
+git status
+
+Example:
+
+Untracked files:
+    app.py
+    database.py
+    requirements.txt
+    templates/
+    static/
+Step 4: Add all files
+git add .
+Step 5: Commit your project
+git commit -m "Initial commit"
+
+Example Output:
+
+15 files changed
+create mode 100644 app.py
+create mode 100644 database.py
+...
+Step 6: Rename the branch to main
+git branch -M main
+Step 7: Connect your GitHub repository
+git remote add origin https://github.com/Arabinda942/AI-Mood-Tracker.git
+
+Check it:
+
+git remote -v
+
+Output:
+
+origin  https://github.com/Arabinda942/AI-Mood-Tracker.git (fetch)
+origin  https://github.com/Arabinda942/AI-Mood-Tracker.git (push)
+Step 8: Push to GitHub
+git push -u origin main
+
+If asked:
+
+Username:
+
+Enter:
+
+Arabinda942
+
+If asked for password:
+
+➡️ Paste your GitHub Personal Access Token (PAT), not your GitHub password.
+
+If you edit your project later
+
+Example: You modify app.py.
+
+Then simply run:
+
+git add .
+git commit -m "Updated login page"
+git push
+Complete command list
+git init
+git status
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/Arabinda942/AI-Mood-Tracker.git
+git push -u origin main
+
+After the first push, you only need:
+
+git add .
+git commit -m "Your update message"
+git push
+
+This is the standard Git workflow used by most developers.
