@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Lifestyle Plan — Auro{% endblock %}
+{% block content %}
+
+<h1 class="auro-title" style="text-align:left;">Your Weekly Rhythm</h1>
+<p class="auro-subtitle" style="text-align:left;">a general routine, meal structure, and activity plan — adjusted lightly to your own logs</p>
+
+<div class="card" style="margin-bottom:1.6rem;">
+  <p>{{ plan.wind_down_note }}</p>
+  {% if total_entries < 4 %}
+  <p style="color:var(--text-dim); font-size:0.92rem; margin-top:0.4rem;">
+    This is a general starting template — log a few more days and the notes above will adjust to your own patterns.
+  </p>
+  {% endif %}
+</div>
+
+<div class="grid cols-2">
+  <div>
+    <div class="section-title"><h2>Weekday Routine</h2></div>
+    <div class="card">
+      <table style="width:100%; border-collapse:collapse;">
+        {% for time, desc in plan.weekday_routine %}
+        <tr style="border-bottom:1px solid var(--border, #2a3542);">
+          <td style="padding:0.5rem 0.6rem 0.5rem 0; color:var(--blue); font-weight:600; white-space:nowrap; vertical-align:top;">{{ time }}</td>
+          <td style="padding:0.5rem 0; color:var(--text);">{{ desc }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title"><h2>Weekend Routine</h2></div>
+    <div class="card">
+      <table style="width:100%; border-collapse:collapse;">
+        {% for time, desc in plan.weekend_routine %}
+        <tr style="border-bottom:1px solid var(--border, #2a3542);">
+          <td style="padding:0.5rem 0.6rem 0.5rem 0; color:var(--green); font-weight:600; white-space:nowrap; vertical-align:top;">{{ time }}</td>
+          <td style="padding:0.5rem 0; color:var(--text);">{{ desc }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section-title"><h2>Eating Structure</h2></div>
+<div class="card" style="margin-bottom:1.6rem;">
+  <ul style="margin:0; padding-left:1.2rem; line-height:1.7;">
+    {% for item in plan.eating_structure %}
+    <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="grid cols-2">
+  <div>
+    <div class="section-title"><h2>Exercise Plan</h2></div>
+    <div class="card">
+      <ul style="margin:0; padding-left:1.2rem; line-height:1.7;">
+        {% for item in plan.exercise_plan %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title"><h2>Stay Engaged</h2></div>
+    <div class="card">
+      <ul style="margin:0; padding-left:1.2rem; line-height:1.7;">
+        {% for item in plan.engagement_activities %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<p style="color:var(--text-dim); font-size:0.9rem; margin-top:1.6rem;">
+  This is a general wellness scaffold, not a medical, dietary, or clinical prescription — adjust it with a
+  doctor, therapist, or dietitian if you have specific health needs.
+</p>
+
+{% endblock %}

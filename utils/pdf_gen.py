@@ -170,13 +170,15 @@ def generate_welcome_pdf(user_name, phone, age, sex, email, location, out_path):
     return out_path
 
 
-def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_path):
+def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_path, analysis=None, plan=None):
     """
     user: sqlite3.Row
     logs: list of mood_logs rows
     cbt_entries: list of cbt_entries rows
     charts: dict of base64 png strings {trend, sleep, exercise}
     stats: dict from correlation_stats()
+    analysis: optional list of narrative paragraphs from insights.build_graph_analysis()
+    plan: optional dict from insights.build_lifestyle_plan()
     """
     styles = _styles()
     story = []
@@ -258,6 +260,12 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
             except Exception:
                 pass
 
+    if analysis:
+        story.append(Paragraph("Graph analysis", styles["AuroHeading"]))
+        for para in analysis:
+            story.append(Paragraph(_safe(para), styles["AuroBody"]))
+        story.append(Spacer(1, 6))
+
     if cbt_entries:
         story.append(Paragraph("Recent CBT thought-records", styles["AuroHeading"]))
         for e in cbt_entries[:8]:
@@ -271,6 +279,53 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
             if e["mood_before"] is not None and e["mood_after"] is not None:
                 story.append(Paragraph(f"Mood shift: {e['mood_before']} &rarr; {e['mood_after']}", styles["AuroBody"]))
             story.append(HRFlowable(width="100%", thickness=0.4, color=BORDER, spaceAfter=8, spaceBefore=4))
+
+    if plan:
+        story.append(Paragraph("Suggested weekly lifestyle plan", styles["AuroHeading"]))
+        story.append(Paragraph(_safe(plan["wind_down_note"]), styles["AuroBody"]))
+        story.append(Spacer(1, 4))
+
+        story.append(Paragraph("Weekday routine", styles["AuroHeading"]))
+        wd_rows = [[t, _safe(desc)] for t, desc in plan["weekday_routine"]]
+        wd_tbl = Table(wd_rows, colWidths=[3.4 * cm, 10.3 * cm])
+        wd_tbl.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9.2),
+            ("TEXTCOLOR", (0, 0), (0, -1), BLUE),
+            ("TEXTCOLOR", (1, 0), (1, -1), TEXT),
+            ("GRID", (0, 0), (-1, -1), 0.3, BORDER),
+            ("BACKGROUND", (0, 0), (-1, -1), PANEL),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ]))
+        story.append(wd_tbl)
+        story.append(Spacer(1, 8))
+
+        story.append(Paragraph("Weekend routine", styles["AuroHeading"]))
+        we_rows = [[t, _safe(desc)] for t, desc in plan["weekend_routine"]]
+        we_tbl = Table(we_rows, colWidths=[3.4 * cm, 10.3 * cm])
+        we_tbl.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9.2),
+            ("TEXTCOLOR", (0, 0), (0, -1), GREEN),
+            ("TEXTCOLOR", (1, 0), (1, -1), TEXT),
+            ("GRID", (0, 0), (-1, -1), 0.3, BORDER),
+            ("BACKGROUND", (0, 0), (-1, -1), PANEL),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ]))
+        story.append(we_tbl)
+        story.append(Spacer(1, 8))
+
+        for heading, items in [
+            ("Eating structure", plan["eating_structure"]),
+            ("Exercise plan", plan["exercise_plan"]),
+            ("Activities to stay engaged", plan["engagement_activities"]),
+        ]:
+            story.append(Paragraph(heading, styles["AuroHeading"]))
+            for line in items:
+                story.append(Paragraph(f"&bull;&nbsp;&nbsp;{_safe(line)}", styles["AuroBody"]))
+            story.append(Spacer(1, 4))
 
     story.append(Paragraph(
         "This report is generated from client-entered self-report data and is intended "

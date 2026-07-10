@@ -11,7 +11,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import database as db
-from utils import charts, pdf_gen
+from utils import charts, pdf_gen, insights
 
 BASE_DIR = os.path.dirname(__file__)
 # Generated PDFs are transient — write them to /tmp rather than under the
@@ -246,6 +246,16 @@ def log_mood():
     return redirect(url_for("dashboard"))
 
 
+# ---------- lifestyle plan ----------
+@app.route("/lifestyle")
+@login_required
+def lifestyle():
+    user_id = session["user_id"]
+    logs = db.get_mood_logs(user_id, limit=365)
+    plan = insights.build_lifestyle_plan(logs)
+    return render_template("lifestyle.html", plan=plan, total_entries=len(logs))
+
+
 # ---------- CBT ----------
 @app.route("/cbt")
 @login_required
@@ -307,7 +317,9 @@ def report_download():
 
     try:
         out_path = os.path.join(OUT_DIR, f"auro_therapist_report_{user['id']}.pdf")
-        pdf_gen.generate_therapist_report_pdf(user, logs, cbt_entries, chart_data, stats, out_path)
+        analysis = insights.build_graph_analysis(logs, stats)
+        plan = insights.build_lifestyle_plan(logs)
+        pdf_gen.generate_therapist_report_pdf(user, logs, cbt_entries, chart_data, stats, out_path, analysis=analysis, plan=plan)
     except Exception:
         app.logger.exception("Failed to generate therapist report for user %s", user["id"])
         flash("Couldn't generate the report — please try again in a moment.")
