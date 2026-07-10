@@ -1,7 +1,7 @@
 """
 PDF generation for Auro — welcome letter and therapist report,
-styled after Rajbari (Bengali heritage palace) motifs: deep maroon,
-antique gold rule lines, ornamental borders, serif typography.
+styled to match the app's "Neon Night" dark theme: charcoal page
+background, glowing blue / green / red accents, modern sans type.
 """
 import io
 import base64
@@ -16,50 +16,44 @@ from reportlab.platypus import (
 )
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
-MAROON = colors.HexColor("#5A1A24")
-GOLD = colors.HexColor("#C9A24B")
-TEAL = colors.HexColor("#1F4B4A")
-IVORY = colors.HexColor("#F3E9D2")
-INK = colors.HexColor("#2B1810")
+BG = colors.HexColor("#0a0e14")
+PANEL = colors.HexColor("#131b25")
+BORDER = colors.HexColor("#2a3542")
+BLUE = colors.HexColor("#3aa0ff")
+GREEN = colors.HexColor("#35e08a")
+RED = colors.HexColor("#ff4d6a")
+TEXT = colors.HexColor("#e8f0f7")
+TEXT_DIM = colors.HexColor("#93a4b8")
 
 
-def _rajbari_border(canvas, doc):
-    """Draw an ornamental double-line palace-style border on every page."""
+def _neon_page(canvas, doc):
+    """Dark page background with a glowing blue/green frame, drawn on every page."""
     canvas.saveState()
     w, h = A4
+
+    canvas.setFillColor(BG)
+    canvas.rect(0, 0, w, h, fill=1, stroke=0)
+
     margin = 1.0 * cm
-    # outer gold line
-    canvas.setStrokeColor(GOLD)
-    canvas.setLineWidth(1.6)
+    canvas.setStrokeColor(BLUE)
+    canvas.setLineWidth(1.4)
     canvas.rect(margin, margin, w - 2 * margin, h - 2 * margin)
-    # inner maroon line
-    canvas.setStrokeColor(MAROON)
-    canvas.setLineWidth(0.7)
+    canvas.setStrokeColor(GREEN)
+    canvas.setLineWidth(0.6)
     inset = margin + 0.22 * cm
     canvas.rect(inset, inset, w - 2 * inset, h - 2 * inset)
 
-    # corner flourishes (small diamond motifs, Rajbari jali-inspired)
-    def diamond(cx, cy, size=6):
-        canvas.setFillColor(GOLD)
-        canvas.setStrokeColor(MAROON)
-        p = canvas.beginPath()
-        p.moveTo(cx, cy + size)
-        p.lineTo(cx + size, cy)
-        p.lineTo(cx, cy - size)
-        p.lineTo(cx - size, cy)
-        p.close()
-        canvas.drawPath(p, fill=1, stroke=1)
+    def dot(cx, cy, color, r=3.2):
+        canvas.setFillColor(color)
+        canvas.circle(cx, cy, r, fill=1, stroke=0)
 
-    corners = [
-        (inset, inset), (w - inset, inset),
-        (inset, h - inset), (w - inset, h - inset)
-    ]
-    for cx, cy in corners:
-        diamond(cx, cy)
+    corners = [(inset, inset), (w - inset, inset), (inset, h - inset), (w - inset, h - inset)]
+    dot_colors = [BLUE, GREEN, RED, BLUE]
+    for (cx, cy), col in zip(corners, dot_colors):
+        dot(cx, cy, col)
 
-    # footer
-    canvas.setFont("Times-Italic", 8)
-    canvas.setFillColor(MAROON)
+    canvas.setFont("Helvetica-Oblique", 8)
+    canvas.setFillColor(TEXT_DIM)
     canvas.drawCentredString(w / 2, margin - 0.1 * cm + 4, "Auro — a quiet mind, kept")
     canvas.restoreState()
 
@@ -70,7 +64,7 @@ def _base_doc(path):
                            leftMargin=1.8 * cm, rightMargin=1.8 * cm)
     frame = Frame(doc.leftMargin, doc.bottomMargin,
                   doc.width, doc.height, id="main")
-    template = PageTemplate(id="rajbari", frames=[frame], onPage=_rajbari_border)
+    template = PageTemplate(id="neon", frames=[frame], onPage=_neon_page)
     doc.addPageTemplates([template])
     return doc
 
@@ -78,24 +72,24 @@ def _base_doc(path):
 def _styles():
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(
-        name="AuroTitle", fontName="Times-Bold", fontSize=28,
-        textColor=MAROON, alignment=TA_CENTER, spaceAfter=4, leading=32
+        name="AuroTitle", fontName="Helvetica-Bold", fontSize=28,
+        textColor=BLUE, alignment=TA_CENTER, spaceAfter=4, leading=32
     ))
     styles.add(ParagraphStyle(
-        name="AuroSub", fontName="Times-Italic", fontSize=13,
-        textColor=TEAL, alignment=TA_CENTER, spaceAfter=18
+        name="AuroSub", fontName="Helvetica-Oblique", fontSize=12.5,
+        textColor=GREEN, alignment=TA_CENTER, spaceAfter=18
     ))
     styles.add(ParagraphStyle(
-        name="AuroHeading", fontName="Times-Bold", fontSize=15,
-        textColor=MAROON, spaceBefore=14, spaceAfter=8
+        name="AuroHeading", fontName="Helvetica-Bold", fontSize=14.5,
+        textColor=BLUE, spaceBefore=14, spaceAfter=8
     ))
     styles.add(ParagraphStyle(
-        name="AuroBody", fontName="Times-Roman", fontSize=11.5,
-        textColor=INK, alignment=TA_LEFT, leading=17, spaceAfter=8
+        name="AuroBody", fontName="Helvetica", fontSize=10.8,
+        textColor=TEXT, alignment=TA_LEFT, leading=16, spaceAfter=8
     ))
     styles.add(ParagraphStyle(
-        name="AuroSignoff", fontName="Times-Italic", fontSize=11.5,
-        textColor=MAROON, alignment=TA_CENTER, spaceBefore=20
+        name="AuroSignoff", fontName="Helvetica-Oblique", fontSize=11,
+        textColor=GREEN, alignment=TA_CENTER, spaceBefore=20
     ))
     return styles
 
@@ -106,15 +100,13 @@ def generate_welcome_pdf(user_name, phone, age, sex, email, location, out_path):
     story = []
 
     story.append(Spacer(1, 0.4 * cm))
-    story.append(Paragraph("आ &nbsp; U R O", styles["AuroTitle"]))
-    story.append(Paragraph("A Mental Health Tracker, kept in the manner of an old Bengali household", styles["AuroSub"]))
-    story.append(HRFlowable(width="60%", thickness=1, color=GOLD, spaceAfter=16, hAlign="CENTER"))
+    story.append(Paragraph("A U R O", styles["AuroTitle"]))
+    story.append(Paragraph("A Mental Health Tracker for the quiet parts of your day", styles["AuroSub"]))
+    story.append(HRFlowable(width="60%", thickness=1, color=BLUE, spaceAfter=16, hAlign="CENTER"))
 
     story.append(Paragraph(f"Dear {user_name},", styles["AuroBody"]))
     story.append(Paragraph(
-        "Welcome to Auro. Consider this letter the brass nameplate at the gate of a "
-        "Rajbari — the old zamindari houses of Bengal, where every courtyard held a "
-        "quiet room set aside for rest and reflection. Auro is built to be that room: "
+        "Welcome to Auro. Think of this as the little glowing lamp by the door — "
         "a private, unhurried space where your moods, your sleep, and your days can be "
         "noted down without judgement, and read back to you in patterns you might "
         "otherwise miss.", styles["AuroBody"]
@@ -132,22 +124,23 @@ def generate_welcome_pdf(user_name, phone, age, sex, email, location, out_path):
     ]
     tbl = Table(data, colWidths=[4.2 * cm, 9.5 * cm])
     tbl.setStyle(TableStyle([
-        ("FONTNAME", (0, 0), (0, -1), "Times-Bold"),
-        ("FONTNAME", (1, 0), (1, -1), "Times-Roman"),
-        ("TEXTCOLOR", (0, 0), (0, -1), MAROON),
-        ("TEXTCOLOR", (1, 0), (1, -1), INK),
-        ("FONTSIZE", (0, 0), (-1, -1), 10.5),
+        ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+        ("FONTNAME", (1, 0), (1, -1), "Helvetica"),
+        ("TEXTCOLOR", (0, 0), (0, -1), BLUE),
+        ("TEXTCOLOR", (1, 0), (1, -1), TEXT),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("LINEBELOW", (0, 0), (-1, -2), 0.4, GOLD),
-        ("BACKGROUND", (0, 0), (-1, -1), IVORY),
+        ("LINEBELOW", (0, 0), (-1, -2), 0.4, BORDER),
+        ("BACKGROUND", (0, 0), (-1, -1), PANEL),
+        ("BOX", (0, 0), (-1, -1), 0.6, BORDER),
     ]))
     story.append(tbl)
 
     story.append(Paragraph("What you can do here", styles["AuroHeading"]))
     for line in [
         "Log your mood each day, alongside sleep and exercise — the two quiet pillars that shape most moods.",
-        "See patterns surface over weeks and months, in charts drawn in the spirit of old ledger books.",
+        "See patterns surface over weeks and months, in clean trend and correlation charts.",
         "Work through short CBT exercises when a thought needs to be examined rather than believed.",
         "Export a clean report for your therapist whenever you'd like a second pair of eyes.",
     ]:
@@ -179,7 +172,7 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
 
     story.append(Paragraph("Auro — Clinical Summary Report", styles["AuroTitle"]))
     story.append(Paragraph("Prepared for review by a mental health professional", styles["AuroSub"]))
-    story.append(HRFlowable(width="60%", thickness=1, color=GOLD, spaceAfter=14, hAlign="CENTER"))
+    story.append(HRFlowable(width="60%", thickness=1, color=BLUE, spaceAfter=14, hAlign="CENTER"))
 
     info = [
         ["Client", user["name"]],
@@ -190,12 +183,14 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
     ]
     tbl = Table(info, colWidths=[4.2 * cm, 9.5 * cm])
     tbl.setStyle(TableStyle([
-        ("FONTNAME", (0, 0), (0, -1), "Times-Bold"),
-        ("TEXTCOLOR", (0, 0), (0, -1), MAROON),
-        ("FONTSIZE", (0, 0), (-1, -1), 10.5),
+        ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+        ("TEXTCOLOR", (0, 0), (0, -1), BLUE),
+        ("TEXTCOLOR", (1, 0), (1, -1), TEXT),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ("BACKGROUND", (0, 0), (-1, -1), IVORY),
-        ("LINEBELOW", (0, 0), (-1, -2), 0.4, GOLD),
+        ("BACKGROUND", (0, 0), (-1, -1), PANEL),
+        ("LINEBELOW", (0, 0), (-1, -2), 0.4, BORDER),
+        ("BOX", (0, 0), (-1, -1), 0.6, BORDER),
     ]))
     story.append(tbl)
     story.append(Spacer(1, 10))
@@ -220,10 +215,11 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
         ]
         stbl = Table(summary_rows, colWidths=[7.5 * cm, 6.2 * cm])
         stbl.setStyle(TableStyle([
-            ("FONTSIZE", (0, 0), (-1, -1), 10.5),
-            ("TEXTCOLOR", (0, 0), (-1, -1), INK),
-            ("GRID", (0, 0), (-1, -1), 0.4, GOLD),
-            ("BACKGROUND", (0, 0), (-1, -1), colors.white),
+            ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("TEXTCOLOR", (0, 0), (-1, -1), TEXT),
+            ("GRID", (0, 0), (-1, -1), 0.4, BORDER),
+            ("BACKGROUND", (0, 0), (-1, -1), PANEL),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
             ("TOPPADDING", (0, 0), (-1, -1), 5),
         ]))
@@ -254,7 +250,7 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
                 story.append(Paragraph(f"Balanced thought: {e['balanced_thought']}", styles["AuroBody"]))
             if e["mood_before"] is not None and e["mood_after"] is not None:
                 story.append(Paragraph(f"Mood shift: {e['mood_before']} &rarr; {e['mood_after']}", styles["AuroBody"]))
-            story.append(HRFlowable(width="100%", thickness=0.4, color=GOLD, spaceAfter=8, spaceBefore=4))
+            story.append(HRFlowable(width="100%", thickness=0.4, color=BORDER, spaceAfter=8, spaceBefore=4))
 
     story.append(Paragraph(
         "This report is generated from client-entered self-report data and is intended "

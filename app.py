@@ -123,11 +123,13 @@ def welcome():
 @app.route("/welcome/download")
 @login_required
 def welcome_download():
-    pdf_path = session.get("welcome_pdf") or os.path.join(OUT_DIR, f"auro_welcome_{session['user_id']}.pdf")
-    if not os.path.exists(pdf_path):
-        user = db.get_user_by_id(session["user_id"])
-        pdf_gen.generate_welcome_pdf(user["name"], user["phone"], user["age"], user["sex"],
-                                      user["email"], user["location"], pdf_path)
+    user = db.get_user_by_id(session["user_id"])
+    pdf_path = os.path.join(OUT_DIR, f"auro_welcome_{session['user_id']}.pdf")
+    # Always regenerate rather than reusing a cached file — otherwise an
+    # account created before a pdf_gen.py style update would keep serving
+    # the old-looking PDF forever.
+    pdf_gen.generate_welcome_pdf(user["name"], user["phone"], user["age"], user["sex"],
+                                  user["email"], user["location"], pdf_path)
     return send_file(pdf_path, as_attachment=True, download_name="Welcome_to_Auro.pdf")
 
 
@@ -160,10 +162,18 @@ def dashboard():
     today = date.today().isoformat()
     today_log = next((r for r in logs if r["log_date"] == today), None)
 
-    trend_chart = charts.mood_trend_chart(logs)
-    sleep_chart = charts.sleep_correlation_chart(logs)
-    exercise_chart = charts.exercise_correlation_chart(logs)
-    stats = charts.correlation_stats(logs)
+    # Chart generation touches matplotlib/numpy on every request; if any one
+    # of them trips (e.g. a bad data point), show the dashboard without
+    # charts rather than 500ing the whole page.
+    try:
+        trend_chart = charts.mood_trend_chart(logs)
+        sleep_chart = charts.sleep_correlation_chart(logs)
+        exercise_chart = charts.exercise_correlation_chart(logs)
+        stats = charts.correlation_stats(logs)
+    except Exception:
+        app.logger.exception("Chart generation failed for user %s", user["id"])
+        trend_chart = sleep_chart = exercise_chart = None
+        stats = {"sleep_corr": None, "exercise_corr": None}
 
     streak = 0
     log_dates = {r["log_date"] for r in logs}
@@ -191,21 +201,44 @@ def dashboard():
     )
 
 
+def _to_int(value, default=None):
+    """Parse a form field to int; accepts comma-as-decimal by truncating, never raises."""
+    if value is None or str(value).strip() == "":
+        return default
+    try:
+        return int(float(str(value).replace(",", ".")))
+    except (ValueError, TypeError):
+        return default
+
+
+def _to_float(value, default=None):
+    """Parse a form field to float; tolerates a comma decimal separator, never raises."""
+    if value is None or str(value).strip() == "":
+        return default
+    try:
+        return float(str(value).replace(",", "."))
+    except (ValueError, TypeError):
+        return default
+
+
 @app.route("/log_mood", methods=["POST"])
 @login_required
 def log_mood():
     user_id = session["user_id"]
     log_date = request.form.get("log_date") or date.today().isoformat()
-    mood_score = int(request.form.get("mood_score", 5))
-    anxiety_score = request.form.get("anxiety_score")
-    anxiety_score = int(anxiety_score) if anxiety_score else None
-    sleep_hours = request.form.get("sleep_hours")
-    sleep_hours = float(sleep_hours) if sleep_hours else None
-    exercise_minutes = request.form.get("exercise_minutes")
-    exercise_minutes = int(exercise_minutes) if exercise_minutes else None
+    mood_score = _to_int(request.form.get("mood_score"), default=5)
+    anxiety_score = _to_int(request.form.get("anxiety_score"))
+    sleep_hours = _to_float(request.form.get("sleep_hours"))
+    exercise_minutes = _to_int(request.form.get("exercise_minutes"))
     notes = request.form.get("notes", "").strip()
 
-    db.upsert_mood_log(user_id, log_date, mood_score, anxiety_score, sleep_hours, exercise_minutes, notes)
+    try:
+        db.upsert_mood_log(user_id, log_date, mood_score, anxiety_score, sleep_hours, exercise_minutes, notes)
+    except Exception:
+        app.logger.exception("Failed to save mood log for user %s", user_id)
+        flash("Something went wrong saving that entry — please try again.")
+        return redirect(url_for("dashboard"))
+
     return redirect(url_for("dashboard"))
 
 
@@ -229,15 +262,19 @@ def cbt_save():
     evidence_for = request.form.get("evidence_for", "")
     evidence_against = request.form.get("evidence_against", "")
     balanced_thought = request.form.get("balanced_thought", "")
-    mood_before = request.form.get("mood_before")
-    mood_after = request.form.get("mood_after")
+    mood_before = _to_int(request.form.get("mood_before"))
+    mood_after = _to_int(request.form.get("mood_after"))
 
-    db.add_cbt_entry(
-        user_id, entry_date, exercise_type, situation, automatic_thought,
-        evidence_for, evidence_against, balanced_thought,
-        int(mood_before) if mood_before else None,
-        int(mood_after) if mood_after else None,
-    )
+    try:
+        db.add_cbt_entry(
+            user_id, entry_date, exercise_type, situation, automatic_thought,
+            evidence_for, evidence_against, balanced_thought,
+            mood_before, mood_after,
+        )
+    except Exception:
+        app.logger.exception("Failed to save CBT entry for user %s", user_id)
+        flash("Something went wrong saving that entry — please try again.")
+
     return redirect(url_for("cbt"))
 
 
@@ -267,6 +304,13 @@ def report_download():
 def api_mood_logs():
     logs = db.get_mood_logs(session["user_id"])
     return jsonify([dict(r) for r in logs])
+
+
+# ---------- error handling ----------
+@app.errorhandler(500)
+def handle_500(e):
+    app.logger.exception("Unhandled server error")
+    return render_template("error.html"), 500
 
 
 if __name__ == "__main__":

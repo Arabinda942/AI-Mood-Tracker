@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong — Auro{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="rajbari-frame auth-card">
+    <div class="divider-motif">✦ ✦ ✦</div>
+    <h1 class="auro-title">A quiet hiccup</h1>
+    <p class="auro-subtitle">something went wrong saving that — nothing else was lost</p>
+    <hr class="gold-rule">
+    <p style="text-align:center;">Please try again. If it keeps happening, try re-entering
+      numbers with a plain dot (e.g. <code>7.5</code>) rather than a comma.</p>
+    <div style="text-align:center;margin-top:1.4rem;">
+      <a class="btn" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

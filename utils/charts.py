@@ -46,9 +46,20 @@ def mood_trend_chart(logs):
     """Line chart of mood & anxiety over time."""
     if not logs:
         return None
-    dates = [datetime.strptime(r["log_date"], "%Y-%m-%d") for r in logs]
-    moods = [r["mood_score"] for r in logs]
-    anx = [r["anxiety_score"] if r["anxiety_score"] is not None else None for r in logs]
+    # Skip any row with a malformed date instead of throwing and taking
+    # down the whole dashboard with it.
+    clean = []
+    for r in logs:
+        try:
+            d = datetime.strptime(r["log_date"], "%Y-%m-%d")
+        except (ValueError, TypeError):
+            continue
+        clean.append((d, r))
+    if not clean:
+        return None
+    dates = [d for d, _ in clean]
+    moods = [r["mood_score"] for _, r in clean]
+    anx = [r["anxiety_score"] if r["anxiety_score"] is not None else None for _, r in clean]
 
     fig, ax = plt.subplots(figsize=(8, 3.6))
     ax.plot(dates, moods, color=BLUE, linewidth=2.4, marker="o", markersize=4,
