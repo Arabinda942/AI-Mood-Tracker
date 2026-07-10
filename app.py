@@ -14,7 +14,11 @@ import database as db
 from utils import charts, pdf_gen
 
 BASE_DIR = os.path.dirname(__file__)
-OUT_DIR = os.path.join(BASE_DIR, "data", "generated")
+# Generated PDFs are transient — write them to /tmp rather than under the
+# app directory. /tmp is reliably writable on constrained hosts like
+# Render's free tier, even if the app's own directory tree isn't (or gets
+# reset oddly on redeploy).
+OUT_DIR = os.path.join("/tmp", "auro_generated")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 app = Flask(__name__)
@@ -292,8 +296,16 @@ def report_download():
             "sleep": charts.sleep_correlation_chart(logs),
             "exercise": charts.exercise_correlation_chart(logs),
         }
-        stats = charts.correlation_stats(logs)
+    except Exception:
+        app.logger.exception("Chart generation failed while building report for user %s", user["id"])
+        chart_data = {"trend": None, "sleep": None, "exercise": None}
 
+    try:
+        stats = charts.correlation_stats(logs)
+    except Exception:
+        stats = {"sleep_corr": None, "exercise_corr": None}
+
+    try:
         out_path = os.path.join(OUT_DIR, f"auro_therapist_report_{user['id']}.pdf")
         pdf_gen.generate_therapist_report_pdf(user, logs, cbt_entries, chart_data, stats, out_path)
     except Exception:

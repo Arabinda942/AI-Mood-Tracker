@@ -3,6 +3,15 @@ Chart generation for Auro dashboard, rendered with matplotlib
 and returned as base64 PNG strings so they can be embedded directly
 in HTML/PDF without saving files that need cleanup.
 """
+import os
+# Must be set before matplotlib is imported. On constrained/read-only
+# hosting (e.g. Render's free tier) the default font-cache location
+# (usually under $HOME) may not be writable, which makes matplotlib raise
+# on import or on first render. /tmp is always writable in these
+# environments, so pin the cache there explicitly.
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/mplconfig")
+os.makedirs(os.environ["MPLCONFIGDIR"], exist_ok=True)
+
 import io
 import base64
 import matplotlib

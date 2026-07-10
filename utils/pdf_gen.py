@@ -238,16 +238,25 @@ def generate_therapist_report_pdf(user, logs, cbt_entries, charts, stats, out_pa
         story.append(Spacer(1, 10))
 
     if charts.get("trend"):
-        story.append(Paragraph("Mood & anxiety trend", styles["AuroHeading"]))
-        img_data = base64.b64decode(charts["trend"])
-        story.append(Image(io.BytesIO(img_data), width=15.5 * cm, height=7 * cm))
+        try:
+            story.append(Paragraph("Mood & anxiety trend", styles["AuroHeading"]))
+            img_data = base64.b64decode(charts["trend"])
+            story.append(Image(io.BytesIO(img_data), width=15.5 * cm, height=7 * cm))
+        except Exception:
+            pass
 
     if charts.get("sleep") or charts.get("exercise"):
         story.append(Paragraph("Correlations", styles["AuroHeading"]))
         if charts.get("sleep"):
-            story.append(Image(io.BytesIO(base64.b64decode(charts["sleep"])), width=9.5 * cm, height=7 * cm))
+            try:
+                story.append(Image(io.BytesIO(base64.b64decode(charts["sleep"])), width=9.5 * cm, height=7 * cm))
+            except Exception:
+                pass
         if charts.get("exercise"):
-            story.append(Image(io.BytesIO(base64.b64decode(charts["exercise"])), width=9.5 * cm, height=7 * cm))
+            try:
+                story.append(Image(io.BytesIO(base64.b64decode(charts["exercise"])), width=9.5 * cm, height=7 * cm))
+            except Exception:
+                pass
 
     if cbt_entries:
         story.append(Paragraph("Recent CBT thought-records", styles["AuroHeading"]))
