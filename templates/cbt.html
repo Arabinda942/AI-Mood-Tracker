@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}CBT Exercises — Auro{% endblock %}
+{% block content %}
+
+<h1 class="auro-title" style="text-align:left;">The Reading Room</h1>
+<p class="auro-subtitle" style="text-align:left;">short CBT exercises for examining a thought before believing it</p>
+
+<div class="grid cols-2" id="cbtLibrary">
+  {% for item in library %}
+  <div class="cbt-card" data-type="{{ item.type }}">
+    <h4>{{ item.title }}</h4>
+    <p>{{ item.blurb }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="section-title"><h2>New Entry</h2></div>
+<div class="card">
+  <form method="POST" action="{{ url_for('cbt_save') }}">
+    <input type="hidden" name="entry_date" value="{{ today if today is defined else '' }}">
+    <div class="field">
+      <label>Exercise type</label>
+      <select name="exercise_type" id="exercise_type">
+        {% for item in library %}
+        <option value="{{ item.type }}">{{ item.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>Situation — what happened?</label>
+      <textarea name="situation" rows="2"></textarea>
+    </div>
+    <div class="field">
+      <label>Automatic thought — what went through your mind?</label>
+      <textarea name="automatic_thought" rows="2"></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Evidence for this thought</label>
+        <textarea name="evidence_for" rows="2"></textarea>
+      </div>
+      <div class="field">
+        <label>Evidence against this thought</label>
+        <textarea name="evidence_against" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="field">
+      <label>Balanced / reframed thought</label>
+      <textarea name="balanced_thought" rows="2"></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Mood before (1-10)</label>
+        <input type="number" min="1" max="10" name="mood_before">
+      </div>
+      <div class="field">
+        <label>Mood after (1-10)</label>
+        <input type="number" min="1" max="10" name="mood_after">
+      </div>
+    </div>
+    <button class="btn" type="submit">Save Entry</button>
+  </form>
+</div>
+
+<div class="section-title"><h2>Past Entries</h2></div>
+{% for e in entries %}
+<div class="card" style="margin-bottom:1rem;">
+  <h3>{{ e['entry_date'] }} — {{ e['exercise_type'].replace('_',' ').title() }}</h3>
+  {% if e['situation'] %}<p><b>Situation:</b> {{ e['situation'] }}</p>{% endif %}
+  {% if e['automatic_thought'] %}<p><b>Automatic thought:</b> {{ e['automatic_thought'] }}</p>{% endif %}
+  {% if e['balanced_thought'] %}<p><b>Balanced thought:</b> {{ e['balanced_thought'] }}</p>{% endif %}
+  {% if e['mood_before'] is not none and e['mood_after'] is not none %}
+    <p><b>Mood shift:</b> {{ e['mood_before'] }} &rarr; {{ e['mood_after'] }}</p>
+  {% endif %}
+</div>
+{% else %}
+<p>No entries yet. The first thought examined is often the hardest — the rest get easier.</p>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/cbt.js') }}"></script>
+{% endblock %}

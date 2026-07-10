@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Sign In — Auro{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="rajbari-frame auth-card">
+    <div class="divider-motif">✦ ✦ ✦</div>
+    <h1 class="auro-title">AURO</h1>
+    <p class="auro-subtitle">a mental health tracker, in the manner of the Rajbari</p>
+    <hr class="gold-rule">
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="field">
+        <label>Phone number</label>
+        <input type="tel" name="phone" placeholder="e.g. 9800000000" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" required>
+      </div>
+      <button class="btn full" type="submit">Enter the House</button>
+    </form>
+    <p class="auth-footer-link">New here? <a href="{{ url_for('register') }}">Register at the gate &rarr;</a></p>
+  </div>
+</div>
+{% endblock %}

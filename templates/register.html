@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Register — Auro{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="rajbari-frame auth-card wide">
+    <div class="divider-motif">✦ ✦ ✦</div>
+    <h1 class="auro-title">Join Auro</h1>
+    <p class="auro-subtitle">register at the gate to open your own quiet room</p>
+    <hr class="gold-rule">
+    <form method="POST" action="{{ url_for('register') }}">
+      <div class="field">
+        <label>Full name</label>
+        <input type="text" name="name" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Phone number</label>
+          <input type="tel" name="phone" placeholder="e.g. 9800000000" required>
+        </div>
+        <div class="field">
+          <label>Age</label>
+          <input type="number" name="age" min="10" max="110">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Sex</label>
+          <select name="sex">
+            <option value="">Prefer not to say</option>
+            <option value="Female">Female</option>
+            <option value="Male">Male</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email">
+        </div>
+      </div>
+      <div class="field">
+        <label>Location</label>
+        <input type="text" name="location" placeholder="City, State">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" required>
+      </div>
+      <button class="btn full" type="submit">Register &amp; Receive Welcome Letter</button>
+    </form>
+    <p class="auth-footer-link">Already registered? <a href="{{ url_for('login') }}">Sign in &rarr;</a></p>
+  </div>
+</div>
+{% endblock %}

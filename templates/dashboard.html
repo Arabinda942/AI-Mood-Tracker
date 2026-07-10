@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Auro{% endblock %}
+{% block content %}
+
+<h1 class="auro-title" style="text-align:left;">Namaskar, {{ user.name.split(' ')[0] }}</h1>
+<p class="auro-subtitle" style="text-align:left;">{{ today }} &nbsp;·&nbsp; your quiet room for today</p>
+
+<div class="grid cols-3">
+  <div class="card">
+    <h3>Current Streak</h3>
+    <div class="stat-number">{{ streak }}</div>
+    <div class="stat-label">day{{ 's' if streak != 1 else '' }} logged in a row</div>
+  </div>
+  <div class="card">
+    <h3>Average Mood</h3>
+    <div class="stat-number">{{ avg_mood if avg_mood else '—' }}</div>
+    <div class="stat-label">out of 10, all-time</div>
+  </div>
+  <div class="card">
+    <h3>Total Entries</h3>
+    <div class="stat-number">{{ total_entries }}</div>
+    <div class="stat-label">days recorded</div>
+  </div>
+</div>
+
+<div class="section-title"><h2>Today's Entry</h2></div>
+<div class="card">
+  <form method="POST" action="{{ url_for('log_mood') }}" id="moodForm">
+    <input type="hidden" name="log_date" value="{{ today }}">
+    <div class="field-row">
+      <div class="field">
+        <label>Mood (1 low — 10 excellent)</label>
+        <div class="slider-row">
+          <input type="range" min="1" max="10" name="mood_score" id="mood_score"
+                 value="{{ today_log['mood_score'] if today_log else 5 }}">
+          <span class="slider-value" id="mood_score_val">{{ today_log['mood_score'] if today_log else 5 }}</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Anxiety (1 calm — 10 intense)</label>
+        <div class="slider-row">
+          <input type="range" min="1" max="10" name="anxiety_score" id="anxiety_score"
+                 value="{{ today_log['anxiety_score'] if today_log else 5 }}">
+          <span class="slider-value" id="anxiety_score_val">{{ today_log['anxiety_score'] if today_log else 5 }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Sleep last night (hours)</label>
+        <input type="number" step="0.25" min="0" max="24" name="sleep_hours"
+               value="{{ today_log['sleep_hours'] if today_log else '' }}">
+      </div>
+      <div class="field">
+        <label>Exercise today (minutes)</label>
+        <input type="number" step="1" min="0" max="600" name="exercise_minutes"
+               value="{{ today_log['exercise_minutes'] if today_log else '' }}">
+      </div>
+    </div>
+    <div class="field">
+      <label>Notes (optional)</label>
+      <textarea name="notes" rows="3" placeholder="What shaped today?">{{ today_log['notes'] if today_log else '' }}</textarea>
+    </div>
+    <button type="submit" class="btn">{{ 'Update' if today_log else 'Save' }} Today's Entry</button>
+  </form>
+</div>
+
+<div class="section-title"><h2>Patterns &amp; Correlations</h2></div>
+<div class="chart-box" style="margin-bottom:1.4rem;">
+  {% if trend_chart %}
+    <img src="data:image/png;base64,{{ trend_chart }}" alt="Mood trend chart">
+  {% else %}
+    <p>Log a few days to see your mood trend appear here.</p>
+  {% endif %}
+</div>
+<div class="grid cols-2">
+  <div class="chart-box">
+    {% if sleep_chart %}
+      <img src="data:image/png;base64,{{ sleep_chart }}" alt="Sleep vs mood chart">
+      {% if stats.sleep_corr is not none %}
+        <p class="stat-label">Correlation (r): {{ stats.sleep_corr }}</p>
+      {% endif %}
+    {% else %}
+      <p>Log sleep hours on a few more days to see this correlation.</p>
+    {% endif %}
+  </div>
+  <div class="chart-box">
+    {% if exercise_chart %}
+      <img src="data:image/png;base64,{{ exercise_chart }}" alt="Exercise vs mood chart">
+      {% if stats.exercise_corr is not none %}
+        <p class="stat-label">Correlation (r): {{ stats.exercise_corr }}</p>
+      {% endif %}
+    {% else %}
+      <p>Log exercise minutes on a few more days to see this correlation.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="section-title"><h2>Your History</h2></div>
+<div class="card" style="overflow-x:auto;">
+  <table class="mood-log">
+    <thead>
+      <tr><th>Date</th><th>Mood</th><th>Anxiety</th><th>Sleep (h)</th><th>Exercise (min)</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      {% for r in logs %}
+      <tr>
+        <td>{{ r['log_date'] }}</td>
+        <td><span class="mood-pill {{ 'mood-high' if r['mood_score'] >= 7 else ('mood-mid' if r['mood_score'] >= 4 else 'mood-low') }}">{{ r['mood_score'] }}</span></td>
+        <td>{{ r['anxiety_score'] if r['anxiety_score'] is not none else '—' }}</td>
+        <td>{{ r['sleep_hours'] if r['sleep_hours'] is not none else '—' }}</td>
+        <td>{{ r['exercise_minutes'] if r['exercise_minutes'] is not none else '—' }}</td>
+        <td>{{ r['notes'] or '' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;">No entries yet — today is a fine day to begin.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

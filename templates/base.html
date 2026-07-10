@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Auro — Mental Health Tracker{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="jali-bg"></div>
+{% if session.get('user_id') %}
+<nav class="auro-nav">
+  <a href="{{ url_for('dashboard') }}" class="auro-brand">AURO<span>a quiet mind, kept</span></a>
+  <div class="auro-nav-links">
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('cbt') }}">CBT Exercises</a>
+    <a href="{{ url_for('report_download') }}">Therapist Report</a>
+    <a href="{{ url_for('logout') }}" class="auro-logout">Log out</a>
+  </div>
+</nav>
+{% endif %}
+
+<div class="auro-shell">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for m in messages %}
+        <div class="flash">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
+<footer class="auro-footer">✦ Auro — in the tradition of the old Rajbari sitting rooms ✦</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Welcome — Auro{% endblock %}
+{% block content %}
+<div class="rajbari-frame welcome-hero">
+  <div class="divider-motif">✦ ✦ ✦</div>
+  <div class="brand-big">AURO</div>
+  <p class="auro-subtitle">Welcome home, {{ user.name.split(' ')[0] }}.</p>
+  <hr class="gold-rule" style="max-width:320px;margin-left:auto;margin-right:auto;">
+  <p style="max-width:520px;margin:1rem auto;font-size:1.15rem;">
+    Your room in the house of Auro is ready. We've drawn up a small welcome letter —
+    a keepsake nameplate for your account — which you can keep for your records.
+  </p>
+  <a class="btn" href="{{ url_for('welcome_download') }}">Download Welcome Letter (PDF)</a>
+  <div style="margin-top:1.6rem;">
+    <a class="btn ghost" href="{{ url_for('dashboard') }}">Go to Dashboard &rarr;</a>
+  </div>
+</div>
+{% endblock %}

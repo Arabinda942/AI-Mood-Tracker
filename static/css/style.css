@@ -1,0 +1,364 @@
+/* ============================================================
+   AURO — Rajbari Heritage Theme
+   Palette inspired by old Bengal zamindar-bari interiors:
+   deep maroon plaster, weathered gold trim, teal shutters,
+   ivory lime-wash walls, warm terracotta floors.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@500;700;900&family=Baloo+Da+2:wght@500;700&display=swap');
+
+:root {
+  --maroon: #5A1A24;
+  --maroon-deep: #3E1019;
+  --gold: #C9A24B;
+  --gold-bright: #E4C878;
+  --teal: #1F4B4A;
+  --teal-deep: #12302F;
+  --ivory: #F3E9D2;
+  --ivory-warm: #EADFC2;
+  --ink: #2B1810;
+  --terracotta: #A85C32;
+  --shadow: rgba(43, 24, 16, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(201,162,75,0.08), transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(31,75,74,0.10), transparent 40%),
+    var(--ivory);
+  min-height: 100vh;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, .display {
+  font-family: 'Playfair Display', serif;
+  color: var(--maroon);
+  letter-spacing: 0.01em;
+}
+
+a { color: var(--teal); }
+
+/* ---------- Jali lattice background pattern ---------- */
+.jali-bg {
+  background-image:
+    linear-gradient(45deg, var(--gold) 1px, transparent 1px),
+    linear-gradient(-45deg, var(--gold) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.06;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- Ornamental frame used on auth pages ---------- */
+.rajbari-frame {
+  position: relative;
+  border: 2px solid var(--gold);
+  outline: 1px solid var(--maroon);
+  outline-offset: -8px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #fffdf7 0%, var(--ivory-warm) 100%);
+  box-shadow: 0 18px 40px var(--shadow), inset 0 0 0 1px rgba(201,162,75,0.3);
+  padding: 2.6rem 2.4rem;
+}
+.rajbari-frame::before,
+.rajbari-frame::after {
+  content: "";
+  position: absolute;
+  width: 22px; height: 22px;
+  border: 2px solid var(--maroon);
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+.rajbari-frame::before { top: -12px; left: -12px; }
+.rajbari-frame::after { bottom: -12px; right: -12px; }
+
+/* ---------- Top navigation ---------- */
+.auro-nav {
+  background: linear-gradient(90deg, var(--maroon-deep), var(--maroon) 50%, var(--maroon-deep));
+  border-bottom: 4px double var(--gold);
+  color: var(--ivory);
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+.auro-brand {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: 1.7rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+.auro-brand span { color: var(--ivory); font-weight: 500; font-size: 0.9rem; display: block; letter-spacing: 0.25em; }
+.auro-nav-links { display: flex; gap: 1.6rem; align-items: center; }
+.auro-nav-links a {
+  color: var(--ivory);
+  text-decoration: none;
+  font-size: 1.05rem;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s, color 0.2s;
+}
+.auro-nav-links a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
+.auro-logout {
+  background: var(--gold);
+  color: var(--maroon-deep) !important;
+  padding: 0.35rem 1rem;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* ---------- Layout ---------- */
+.auro-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2.2rem 1.6rem 4rem;
+}
+
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+}
+.auth-card { max-width: 480px; width: 100%; }
+.auth-card.wide { max-width: 620px; }
+
+.auro-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin: 0 0 0.1rem;
+}
+.auro-subtitle {
+  text-align: center;
+  font-style: italic;
+  color: var(--teal);
+  margin: 0 0 1.6rem;
+  font-size: 1.15rem;
+}
+.gold-rule {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 1.2rem 0 1.6rem;
+}
+
+/* ---------- Forms ---------- */
+.field { margin-bottom: 1.1rem; }
+.field label {
+  display: block;
+  font-weight: 600;
+  color: var(--maroon);
+  margin-bottom: 0.3rem;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--gold);
+  border-radius: 3px;
+  background: #fffdf9;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--maroon);
+  box-shadow: 0 0 0 3px rgba(201,162,75,0.25);
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.btn {
+  display: inline-block;
+  background: linear-gradient(180deg, var(--maroon) 0%, var(--maroon-deep) 100%);
+  color: var(--gold-bright);
+  border: 1px solid var(--gold);
+  padding: 0.7rem 1.8rem;
+  border-radius: 3px;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px var(--shadow); }
+.btn.full { width: 100%; text-align: center; }
+.btn.teal { background: linear-gradient(180deg, var(--teal), var(--teal-deep)); border-color: var(--gold); }
+.btn.ghost { background: transparent; color: var(--maroon); border: 1.5px solid var(--maroon); }
+
+.auth-footer-link { text-align: center; margin-top: 1.2rem; font-size: 1rem; }
+
+.flash {
+  background: #fbe8e4;
+  border: 1px solid var(--terracotta);
+  color: var(--maroon-deep);
+  padding: 0.7rem 1rem;
+  border-radius: 3px;
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+}
+
+/* ---------- Dashboard cards ---------- */
+.grid { display: grid; gap: 1.4rem; }
+.grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+.card {
+  background: #fffdf8;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  padding: 1.4rem 1.5rem;
+  box-shadow: 0 6px 18px var(--shadow);
+  position: relative;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid rgba(201,162,75,0.35);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.card h3 { margin: 0 0 0.4rem; font-size: 1.15rem; }
+.card .stat-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.6rem;
+  color: var(--maroon);
+  font-weight: 700;
+  line-height: 1;
+}
+.card .stat-label { color: var(--teal); font-style: italic; font-size: 1rem; }
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 2.2rem 0 1rem;
+}
+.section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+.chart-box {
+  background: #fffdf8;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  padding: 1rem;
+  text-align: center;
+}
+.chart-box img { max-width: 100%; }
+
+table.mood-log {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fffdf8;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  overflow: hidden;
+}
+table.mood-log th {
+  background: var(--maroon);
+  color: var(--gold-bright);
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
+}
+table.mood-log td {
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid rgba(201,162,75,0.3);
+}
+table.mood-log tr:last-child td { border-bottom: none; }
+table.mood-log tr:hover { background: rgba(201,162,75,0.08); }
+
+.mood-pill {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.mood-low { background: #f6dcd6; color: var(--maroon-deep); }
+.mood-mid { background: #f1e6c4; color: #6b5314; }
+.mood-high { background: #d9ecdc; color: #2c5c33; }
+
+.slider-row { display: flex; align-items: center; gap: 0.8rem; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--maroon); }
+.slider-value {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--maroon);
+  min-width: 2ch;
+  text-align: center;
+}
+
+/* ---------- CBT cards ---------- */
+.cbt-card {
+  border: 1px solid var(--gold);
+  background: #fffdf8;
+  border-radius: 6px;
+  padding: 1.2rem 1.4rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.cbt-card:hover { box-shadow: 0 8px 18px var(--shadow); transform: translateY(-2px); }
+.cbt-card.active { border-color: var(--maroon); background: var(--ivory-warm); }
+.cbt-card h4 { margin: 0 0 0.3rem; }
+.cbt-card p { margin: 0; color: var(--teal); font-size: 0.98rem; }
+
+.divider-motif {
+  text-align: center;
+  color: var(--gold);
+  font-size: 1.2rem;
+  letter-spacing: 0.6em;
+  margin: 1rem 0;
+}
+
+.welcome-hero {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+.welcome-hero .brand-big {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.2rem;
+  color: var(--maroon);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+footer.auro-footer {
+  text-align: center;
+  color: var(--teal);
+  font-style: italic;
+  padding: 2rem 0 1rem;
+  font-size: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 800px) {
+  .grid.cols-3, .grid.cols-2 { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+}
